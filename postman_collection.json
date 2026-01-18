@@ -1,0 +1,68 @@
+{
+    "info": {
+        "_postman_id": "order-execution-engine-collection",
+        "name": "Order Execution Engine",
+        "description": "Collection for testing Order Execution Engine with WebSocket support",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Submit Order",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"tokenIn\": \"SOL\",\n    \"tokenOut\": \"USDC\",\n    \"amount\": 1.5\n}"
+                },
+                "url": {
+                    "raw": "http://localhost:3000/api/orders/execute",
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "3000",
+                    "path": [
+                        "api",
+                        "orders",
+                        "execute"
+                    ]
+                }
+            },
+            "response": []
+        },
+        {
+            "name": "WebSocket Stream",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "ws://localhost:3000/api/orders/execute?orderId={{orderId}}",
+                    "protocol": "ws",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "3000",
+                    "path": [
+                        "api",
+                        "orders",
+                        "execute"
+                    ],
+                    "query": [
+                        {
+                            "key": "orderId",
+                            "value": "{{orderId}}",
+                            "description": "Replace with Order ID returned from Submit Order"
+                        }
+                    ]
+                }
+            },
+            "response": []
+        }
+    ]
+}
