@@ -1,4 +1,5 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest } from 'fastify';
+import { SocketStream } from '@fastify/websocket';
 import { createOrder } from '../controllers/orderController';
 import { redis } from '../config/redis';
 import { WebSocket } from 'ws';
@@ -17,7 +18,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
     // This implies 2 separate connections or a very specific flow. 
     // Standard way: POST -> get ID -> Connect WS w/ ID.
 
-    fastify.get('/execute', { websocket: true }, (connection, req) => {
+    fastify.get('/execute', { websocket: true }, (connection: SocketStream, req: FastifyRequest) => {
         const { socket } = connection;
         const query = req.query as { orderId?: string };
 
@@ -26,7 +27,7 @@ export async function orderRoutes(fastify: FastifyInstance) {
             subscribeToOrder(socket, query.orderId);
         }
 
-        socket.on('message', (message) => {
+        socket.on('message', (message: Buffer) => {
             try {
                 const data = JSON.parse(message.toString());
                 if (data.orderId) {
