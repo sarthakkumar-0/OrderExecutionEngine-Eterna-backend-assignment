@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: order-execution-engine
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npx prisma db push && npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: order-db
+          property: connectionString
+      - key: REDIS_HOST
+        fromService:
+          type: redis
+          name: order-redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: redis
+          name: order-redis
+          property: port
+    autoDeploy: true
+
+databases:
+  - name: order-db
+    plan: free
+    databaseName: orderdb
+    user: user
+
+  - name: order-redis
+    plan: free
+    ipAllowList: [] # Allow internal access only

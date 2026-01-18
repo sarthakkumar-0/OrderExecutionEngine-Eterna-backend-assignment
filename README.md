@@ -2,6 +2,18 @@
 
 Backend service for executing market orders with DEX routing (Raydium/Meteora) and real-time WebSocket updates.
 
+## Deployment
+
+**Public URL:** `[INSERT DEPLOYED URL HERE]`
+
+### How to Deploy (Render.com)
+1. Fork/Clone this repo to your GitHub.
+2. Sign up at [Render.com](https://render.com).
+3. Go to Dashboard -> **New** -> **Blueprint**.
+4. Connect your repository.
+5. Render will automatically read `render.yaml` and create the Web Service, Redis, and Postgres for free.
+6. Once deployed, copy the URL and update this README.
+
 ## Features
 
 - **Market Order Execution**: Routes orders to the best price provider.
