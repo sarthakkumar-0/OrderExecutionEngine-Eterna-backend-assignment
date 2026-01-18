@@ -1,68 +1,85 @@
 # Order Execution Engine
 
-Backend service for executing market orders with DEX routing (Raydium/Meteora) and real-time WebSocket updates.
+A robust backend service for executing **Market Orders** with smart DEX routing (simulating Raydium vs. Meteora) and real-time WebSocket status updates.
 
-## Deployment
+## 🚀 Deployment & Deliverables
 
-**Public URL:** `[INSERT DEPLOYED URL HERE]`
+* **Live URL:** `[INSERT YOUR RENDER URL HERE]`
+* **Demo Video:** `[INSERT YOUR YOUTUBE LINK HERE]`
+* **API Documentation:** [Postman Collection](./postman_collection.json)
+* **Solana Explorer:** `[OPTIONAL: Insert TX Link if using real Devnet]`
 
-### How to Deploy (Render.com)
-1. Fork/Clone this repo to your GitHub.
-2. Sign up at [Render.com](https://render.com).
-3. Go to Dashboard -> **New** -> **Blueprint**.
-4. Connect your repository.
-5. Render will automatically read `render.yaml` and create the Web Service, Redis, and Postgres for free.
-6. Once deployed, copy the URL and update this README.
+---
 
-## Features
+## 🏗 Architecture & Design Decisions
 
-- **Market Order Execution**: Routes orders to the best price provider.
-- **Smart Routing**: Compares prices between Raydium and Meteora (Mocked).
-- **Concurrency**: Process up to 10 orders simultaneously with rate limiting (100 orders/min).
-- **Real-time Updates**: WebSocket streaming of order status (Pending -> Routing -> Building -> Submitted -> Confirmed).
-- **Reliability**: Exponential backoff retries and persistent order history (PostgreSQL).
+### Why Market Orders?
+I chose to implement **Market Orders** because they demonstrate the core value of a DEX router: **latency-sensitive price comparison**. Immediate execution requires efficient async processing and real-time locking of the best quote, which effectively showcases the system's routing logic and queue management capabilities.
 
-## Tech Stack
+**Extension Strategy (Limit & Sniper Orders):**
+To extend this engine for **Limit** or **Sniper** orders, I would implement a "Price Watcher" worker.
+1.  **Limit Orders:** Instead of immediate processing, orders are stored in PostgreSQL with a `targetPrice`. A separate worker polls prices (or subscribes to chain events) and pushes the order to the existing `execute` queue only when the condition is met.
+2.  **Sniper Orders:** Similar to Limit orders, but triggered by `liquidity add` events on-chain.
 
-- **Runtime**: Node.js + TypeScript
-- **Framework**: Fastify
-- **Queue**: BullMQ + Redis
-- **Database**: PostgreSQL (History), Redis (Active Status)
+### Tech Stack
+* **Runtime:** Node.js + TypeScript
+* **Framework:** Fastify (Chosen for low overhead and built-in WebSocket support)
+* **Queue:** BullMQ + Redis (Handles concurrency and retries for reliability)
+* **Database:** PostgreSQL (Permanent history) + Redis (Ephemeral state & caching)
 
-## Setup
+---
 
-1. **Clone the repository**
-   ```bash
-   git clone <repo-url>
-   cd order-execution-engine
-   ```
+## ✨ Features
 
-2. **Install Dependencies**
-   ```bash
-   npm install
-   ```
+* **Smart DEX Routing**: Queries multiple (mocked) providers to find the best rate (Raydium vs Meteora).
+* **High Concurrency**: Uses BullMQ to process up to 10 simultaneous orders with a rate limit of 100 orders/min.
+* **Real-time Updates**: WebSocket streaming of the full order lifecycle (`pending` → `routing` → `building` → `submitted` → `confirmed`).
+* **Fault Tolerance**: Implements exponential backoff strategies for failed network requests.
 
-3. **Start Infrastructure (Docker)**
-   Ensure Docker is running.
-   ```bash
-   docker-compose up -d
-   ```
+---
 
-4. **Initialize Database**
-   ```bash
-   npx prisma generate
-   npx prisma db push
-   ```
+## 🛠 Setup & Local Development
 
-5. **Run the Server**
-   ```bash
-   npm run dev
-   ```
+1.  **Clone the repository**
+    ```bash
+    git clone <repo-url>
+    cd order-execution-engine
+    ```
 
-## API Usage
+2.  **Install Dependencies**
+    ```bash
+    npm install
+    ```
 
-### Submit Order
-`POST /api/orders/execute`
+3.  **Start Infrastructure (Docker)**
+    Ensure Docker is running to spin up Postgres and Redis.
+    ```bash
+    docker-compose up -d
+    ```
+
+4.  **Initialize Database**
+    ```bash
+    npx prisma generate
+    npx prisma db push
+    ```
+
+5.  **Run the Server**
+    ```bash
+    npm run dev
+    ```
+
+6.  **Run Tests**
+    Includes >10 unit/integration tests covering routing, queueing, and WS logic.
+    ```bash
+    npm test
+    ```
+
+---
+
+## 📡 API Usage
+
+### 1. Submit Order (HTTP)
+**Endpoint:** `POST /api/orders/execute`
 
 **Body:**
 ```json
@@ -81,20 +98,14 @@ Backend service for executing market orders with DEX routing (Raydium/Meteora) a
 }
 ```
 
-### WebSocket Updates
-Connect to: `ws://localhost:3000/api/orders/execute?orderId=<ORDER_ID>`
+### 2. WebSocket Status Stream
+**Endpoint:** `ws://localhost:3000/api/orders/execute?orderId=<ORDER_ID>`
 
-**Messages:**
+**Message Flow:**
 ```json
 { "status": "pending", "orderId": "..." }
 { "status": "routing", "timestamp": "..." }
 { "status": "building", "dex": "Raydium", "price": 102.5 }
-{ "status": "confirmed", "txHash": "...", "executedPrice": 102.5 }
-```
-
-## Testing
-
-Run unit/integration tests:
-```bash
-npm test
+{ "status": "submitted" }
+{ "status": "confirmed", "txHash": "0x123...", "executedPrice": 102.5 }
 ```
