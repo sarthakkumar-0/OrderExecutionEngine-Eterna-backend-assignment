@@ -48,7 +48,7 @@ function subscribeToOrder(socket: WebSocket, orderId: string) {
 
     subRedis.subscribe(channel);
 
-    subRedis.on('message', (chan, msg) => {
+    subRedis.on('message', (chan: string, msg: string) => {
         if (chan === channel) {
             socket.send(msg);
             // Close connection if finished? 

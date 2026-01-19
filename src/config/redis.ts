@@ -5,8 +5,8 @@ dotenv.config();
 
 const REDIS_URL = process.env.REDIS_URL;
 
-let redis: Redis.Redis;
-let connection: Redis.Redis;
+let redis: Redis;
+let connection: Redis;
 let redisOptions: any;
 
 if (REDIS_URL) {
