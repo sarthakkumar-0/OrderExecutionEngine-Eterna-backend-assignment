@@ -24,12 +24,13 @@ services:
           property: port
     autoDeploy: true
 
+  - type: redis
+    name: order-redis
+    plan: free
+    ipAllowList: [] # Allow internal access only
+
 databases:
   - name: order-db
     plan: free
     databaseName: orderdb
     user: user
-
-  - name: order-redis
-    plan: free
-    ipAllowList: [] # Allow internal access only
