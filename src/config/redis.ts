@@ -10,7 +10,9 @@ const redisConfig = {
 
 export const redis = new Redis(redisConfig);
 
-export const connection = new Redis({
+export const redisOptions = {
     ...redisConfig,
     maxRetriesPerRequest: null,
-});
+};
+
+export const connection = new Redis(redisOptions);

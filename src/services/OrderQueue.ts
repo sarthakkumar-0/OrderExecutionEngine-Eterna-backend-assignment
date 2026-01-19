@@ -1,5 +1,5 @@
 import { Queue, Worker, Job } from 'bullmq';
-import { connection, redis } from '../config/redis';
+import { redisOptions, redis } from '../config/redis';
 import { DexRouter } from './DexRouter';
 import { PrismaClient } from '@prisma/client';
 
@@ -9,7 +9,7 @@ const dexRouter = new DexRouter();
 export const ORDER_QUEUE_NAME = 'order-execution-queue';
 
 export const orderQueue = new Queue(ORDER_QUEUE_NAME, {
-    connection,
+    connection: redisOptions,
     defaultJobOptions: {
         attempts: 3,
         backoff: {
@@ -113,7 +113,7 @@ export const orderWorker = new Worker<OrderJobData>(
         }
     },
     {
-        connection,
+        connection: redisOptions,
         concurrency: 10, // Requirement: 10 concurrent orders
         limiter: {
             max: 100,
